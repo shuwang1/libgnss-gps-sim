@@ -108,6 +108,9 @@ struct Logger {
     ///   - level: Severity level for the dump.
     ///   - label: Title for the dump.
     ///   - data: Raw binary data.
+    ///   - file: Source file name (automatically populated).
+    ///   - line: Source line number (automatically populated).
+    ///   - function: Source function name (automatically populated).
     static func hexDump(_ level: LogLevel, label: String, data: Data, file: String = #file, line: Int = #line, function: String = #function) {
         guard level >= minLevel else { return }
         log(level, "\(label) (\(data.count) bytes):", file: file, line: line, function: function)
