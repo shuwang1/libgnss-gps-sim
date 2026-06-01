@@ -9,16 +9,16 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-latest
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer # Adjust version as neededi
+      #env:
+      #  DEVELOPER_DIR: /Applications/Xcode_15.4.app/Contents/Developer # Adjust version as neededi
 
     steps:
     - uses: actions/checkout@v4
     
-    - name: Setup Swift
-      uses: swiftlang/setup-swift@v1
-      with:
-        swift-version: "6.3"
+      # - name: Setup Swift
+      #   uses: swiftlang/setup-swift@v1
+      #   with:
+      #     swift-version: "6.3"
         
     - name: Build and Test
       run: swift build -v
