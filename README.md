@@ -20,7 +20,7 @@ Ensure you have Swift 6.0 or later installed on your macOS (10.15.4+) or Linux s
 
 ```bash
 git clone <repository-url>
-cd gnss-sig-gen-swift
+cd gps-signal-generator
 swift build -c release
 ```
 
