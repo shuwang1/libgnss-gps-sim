@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Initial Swift Port**: Completed the transition from C to a modular Swift package.
+- **Explicit Licensing**: Added detailed license and liability clauses to every source file and `LICENSE.md`, ensuring maximum legal clarity and protection.
 - **Core GNSS Logic**:
   - RINEX 2.x and 3.x navigation message parsing (`GPSEphemeris.swift`).
   - GPS L1 C/A Gold code generation with performance-optimized bit mapping (`GPSCode.swift`).

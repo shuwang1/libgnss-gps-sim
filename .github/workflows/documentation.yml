@@ -24,7 +24,7 @@ jobs:
     - name: Setup Swift
       uses: swiftlang/setup-swift@v1
       with:
-        swift-version: "6.0"
+        swift-version: "6.3"
         
     - name: Build Documentation
       run: |
