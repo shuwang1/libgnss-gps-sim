@@ -7,7 +7,7 @@ A high-performance Swift implementation of a GNSS L1 C/A baseband signal generat
 
 ## Features
 
-- **Multi-constellation support**: Foundation for GPS, GLONASS, Galileo, and BeiDou.
+- **Multi-constellation support**: Foundation for GPS.
 - **Accurate Physics**: WGS84 Earth model, Klobuchar ionospheric delay, and relativistic clock corrections.
 - **Trajectory Processing**: Support for ECEF/LLH CSV files and NMEA GGA streams.
 - **High Performance**: Optimized fixed-point arithmetic for signal synthesis.
