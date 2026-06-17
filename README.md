@@ -1,4 +1,4 @@
-# gnss-sig-gen-swift: Modular GNSS Signal Generator
+# gps-sig-gen-swift: Modular GNSS Signal Generator
 
 [![CI](https://github.com/shuwang1/gps-signal-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/shuwang1/gps-signal-generator/actions/workflows/ci.yml)
 [![Doc Pages-build-deployment](https://github.com/shuwang1/gps-signal-generator/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/shuwang1/gps-signal-generator/actions/workflows/pages/pages-build-deployment)
