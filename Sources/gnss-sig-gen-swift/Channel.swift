@@ -85,8 +85,10 @@ struct Channel {
     ///   - satPos: Satellite ECEF position.
     ///   - satVel: Satellite ECEF velocity.
     ///   - clk: Satellite clock bias and drift.
+    ///   - llh: Precomputed receiver LLH position.
+    ///   - tmat: Precomputed receiver local tangent plane matrix.
     /// - Returns: A `Range` instance with estimated signal parameters.
-    static func estimateRange(ionoutc: IonUTC, g: GPSTime, xyz: Vector3, satPos: Vector3, satVel: Vector3, clk: (bias: Double, drift: Double)) -> Range {
+    static func estimateRange(ionoutc: IonUTC, g: GPSTime, xyz: Vector3, satPos: Vector3, satVel: Vector3, clk: (bias: Double, drift: Double), llh: Vector3, tmat: [[Double]]) -> Range {
         var rho = Range()
         var pos = satPos
         
@@ -107,8 +109,6 @@ struct Channel {
         rho.rate = dot(satVel, los) / range
         rho.g = g
         
-        let llh = MathUtils.xyz2llh(xyz)
-        let tmat = MathUtils.ltcmat(llh)
         let neu = MathUtils.ecef2neu(los, t: tmat)
         rho.azel = MathUtils.neu2azel(neu)
         
