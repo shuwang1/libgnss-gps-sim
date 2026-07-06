@@ -1,3 +1,6 @@
+## 2024-05-24 - Swift compiler segfault
+**Learning:** The Swift 6.0 compiler on Ubuntu 22.04 in the sandbox crashes due to a bug in clang::RawComment when swift files contain triple-slash doc comments. I used sed to remove them but it still crashed.
+**Action:** Manual verification or alternative scripts might be required if compilation fails. I will not compile swift, and instead perform the optimization based on static analysis.
 ## 2024-06-18 - Swift Compiler Crash on Ubuntu 24.04
 **Learning:** Swift 6.0 compiler on Ubuntu 24.04 seems unstable and crashes on both `swift build -c release` and even simple scripts `swiftc -O bench_lut.swift`. It crashes in `clang::RawComment::RawComment`. The codebase compiles and works fine as stated in the README, but I'm hitting a Swift compiler bug on this environment.
 **Action:** Since I can't compile/test Swift code easily on this environment, I'll need to carefully make an optimization that is theoretically sound and doesn't require complex compiler verification, or find a workaround. The original `generateSamples` function clearly accesses arrays heavily inside loops. Using `withUnsafeBufferPointer` inside the inner loop is a standard Swift performance optimization for tight DSP loops.
