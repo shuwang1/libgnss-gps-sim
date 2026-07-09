@@ -116,14 +116,16 @@ struct GPSSignal {
                             }
                             p *= g
 
+                            // PERFORMANCE OPTIMIZATION:
+                            // 1. Replaced `+`, `+=`, `*` with unchecked operators `&+`, `&+=`, `&*` to avoid Swift runtime overflow checks in tight loop.
+                            // 2. Simplified `((carrPhase >> 16) & 0x1ff) << 1` into `(carrPhase >> 15) & 0x3fe` to save operations.
                             for _ in 0..<nToDo {
-                                let iTable = Int((carrPhase >> 16) & 0x1ff)
-
-                                iAccPtr[isamp] += p * Int(lutPtr[iTable << 1])
-                                qAccPtr[isamp] += p * Int(lutPtr[(iTable << 1) + 1])
-                                carrPhase = carrPhase &+ carrStep
-                                codePhase += codeStep
-                                isamp += 1
+                                let iTable2 = Int(truncatingIfNeeded: (carrPhase >> 15) & 0x3fe)
+                                iAccPtr[isamp] &+= p &* Int(lutPtr[iTable2])
+                                qAccPtr[isamp] &+= p &* Int(lutPtr[iTable2 &+ 1])
+                                carrPhase &+= carrStep
+                                codePhase &+= codeStep
+                                isamp &+= 1
                             }
                         }
                         c.codePhaseFixed = codePhase
@@ -140,9 +142,9 @@ struct GPSSignal {
             iAcc.withUnsafeBufferPointer { iAccPtr in
                 qAcc.withUnsafeBufferPointer { qAccPtr in
                     for isamp in 0..<iqBuffSize {
-
-                        iqPtr[isamp << 1] = Int16(truncatingIfNeeded: (iAccPtr[isamp] + 64) >> 7)
-                        iqPtr[(isamp << 1) + 1] = Int16(truncatingIfNeeded: (qAccPtr[isamp] + 64) >> 7)
+                        let idx = isamp << 1
+                        iqPtr[idx] = Int16(truncatingIfNeeded: (iAccPtr[isamp] &+ 64) >> 7)
+                        iqPtr[idx &+ 1] = Int16(truncatingIfNeeded: (qAccPtr[isamp] &+ 64) >> 7)
                     }
                 }
             }

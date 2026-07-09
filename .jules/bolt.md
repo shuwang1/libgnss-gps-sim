@@ -10,3 +10,6 @@
 ## 2026-06-15 - Optimize pow() calls with direct multiplication
 **Learning:** Replaced `pow(x, 2)` and `pow(x, 3)` with direct multiplications `x * x` and `x * x * x` in `Sources/gnss-sig-gen-swift/Channel.swift` and `Simulator.swift` to improve performance. The Swift compiler crashes randomly on this devbox due to an unrelated environment issue (`swift-frontend` segfault in `clang::RawComment`), so tests were run via Python scripts demonstrating an over 40% speedup for simple powers by avoiding math library overhead.
 **Action:** When small integer powers are used in hot paths like signal simulation or tight loops, replace them with direct multiplications.
+## 2026-06-20 - Swift wrapping arithmetic operators for DSP
+**Learning:** Replaced standard arithmetic operators (`+`, `*`, `+=`) with their unchecked, wrapping equivalents (`&+`, `&*`, `&+=`) inside the tight I/Q sample generation loop in `GPSSignal.swift`. This instructs the Swift compiler to skip runtime overflow bounds checking, unlocking a massive performance boost for DSP phases/accumulators that either naturally wrap or are guaranteed not to overflow.
+**Action:** When working in Swift on extremely tight loops representing bit manipulation or phase tracking, always use unchecked arithmetic operators (`&+`, `&-`, `&*`) where overflow is impossible or intended wrapping is mathematically correct.
