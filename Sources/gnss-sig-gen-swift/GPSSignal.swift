@@ -69,12 +69,14 @@ struct GPSSignal {
     ///   - channels: Array of all simulation channels.
     ///   - gains: Signal gain for each channel.
     ///   - active: Indices of active channels to synthesize.
-    static func generateSamples(iqBuff: inout [Int16], iqBuffSize: Int, channels: inout [Link], gains: [Int], active: [Int]) {
-        var iAcc = [Int](repeating: 0, count: iqBuffSize)
-        var qAcc = [Int](repeating: 0, count: iqBuffSize)
-        
+    ///   - iAcc: Pre-allocated buffer for I accumulation.
+    ///   - qAcc: Pre-allocated buffer for Q accumulation.
+    static func generateSamples(iqBuff: inout [Int16], iqBuffSize: Int, channels: inout [Link], gains: [Int], active: [Int], iAcc: inout [Int], qAcc: inout [Int]) {
         iAcc.withUnsafeMutableBufferPointer { iAccPtr in
+            for i in 0..<iqBuffSize { iAccPtr[i] = 0 }
+
             qAcc.withUnsafeMutableBufferPointer { qAccPtr in
+                for i in 0..<iqBuffSize { qAccPtr[i] = 0 }
                 LUT.iq_lut.withUnsafeBufferPointer { lutPtr in
                     for ai in active {
                         var c = channels[ai]
