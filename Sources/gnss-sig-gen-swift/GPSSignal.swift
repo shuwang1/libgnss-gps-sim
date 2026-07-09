@@ -120,9 +120,8 @@ struct GPSSignal {
 
                             for _ in 0..<nToDo {
                                 let iTable = Int((carrPhase >> 16) & 0x1ff)
-
-                                iAccPtr[isamp] += p * Int(lutPtr[iTable << 1])
-                                qAccPtr[isamp] += p * Int(lutPtr[(iTable << 1) + 1])
+                                iAccPtr[isamp] += p * Int(iqLutPtr[iTable << 1])
+                                qAccPtr[isamp] += p * Int(iqLutPtr[(iTable << 1) + 1])
                                 carrPhase = carrPhase &+ carrStep
                                 codePhase += codeStep
                                 isamp += 1
@@ -138,15 +137,10 @@ struct GPSSignal {
             }
         }
         
-        iqBuff.withUnsafeMutableBufferPointer { iqPtr in
-            iAcc.withUnsafeBufferPointer { iAccPtr in
-                qAcc.withUnsafeBufferPointer { qAccPtr in
-                    for isamp in 0..<iqBuffSize {
-
-                        iqPtr[isamp << 1] = Int16(truncatingIfNeeded: (iAccPtr[isamp] + 64) >> 7)
-                        iqPtr[(isamp << 1) + 1] = Int16(truncatingIfNeeded: (qAccPtr[isamp] + 64) >> 7)
-                    }
-                }
+        iqBuff.withUnsafeMutableBufferPointer { iqBuffPtr in
+            for isamp in 0..<iqBuffSize {
+                iqBuffPtr[isamp << 1] = Int16(truncatingIfNeeded: (iAcc[isamp] + 64) >> 7)
+                iqBuffPtr[(isamp << 1) + 1] = Int16(truncatingIfNeeded: (qAcc[isamp] + 64) >> 7)
             }
         }
     }
