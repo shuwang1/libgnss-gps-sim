@@ -73,9 +73,12 @@ struct GPSSignal {
         var iAcc = [Int](repeating: 0, count: iqBuffSize)
         var qAcc = [Int](repeating: 0, count: iqBuffSize)
         
-        iAcc.withUnsafeMutableBufferPointer { iAccPtr in
-            qAcc.withUnsafeMutableBufferPointer { qAccPtr in
-                LUT.iq_lut.withUnsafeBufferPointer { lutPtr in
+        // Optimization: Bypassing Swift array bounds checking using UnsafeBufferPointers.
+        // The inner loops here run millions of times per second (digital signal processing).
+        // Using direct memory access avoids significant CPU overhead and speeds up sample generation.
+        LUT.iq_lut.withUnsafeBufferPointer { iqLutPtr in
+            iAcc.withUnsafeMutableBufferPointer { iAccPtr in
+                qAcc.withUnsafeMutableBufferPointer { qAccPtr in
                     for ai in active {
                         var c = channels[ai]
                         var g = gains[ai] * c.dataBit
