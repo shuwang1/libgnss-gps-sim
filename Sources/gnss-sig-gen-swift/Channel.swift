@@ -48,8 +48,8 @@ struct Channel {
         let E = azel.el / Constants.PI
         let phi_u = llh[0] / Constants.PI
         let lam_u = llh[1] / Constants.PI
-        let e_diff = 0.53 - E
-        let F = 1.0 + 16.0 * e_diff * e_diff * e_diff
+        let fTerm = 0.53 - E
+        let F = 1.0 + 16.0 * (fTerm * fTerm * fTerm)
         
         if !ionoutc.vflg { return F * 5.0e-9 * Constants.SPEED_OF_LIGHT }
         
@@ -62,10 +62,12 @@ struct Channel {
         let phi_m2 = phi_m * phi_m
         let phi_m3 = phi_m2 * phi_m
         
-        var AMP = ionoutc.alpha0 + ionoutc.alpha1 * phi_m + ionoutc.alpha2 * phi_m2 + ionoutc.alpha3 * phi_m3
+        // Horner's method for polynomial evaluation
+        var AMP = ionoutc.alpha0 + phi_m * (ionoutc.alpha1 + phi_m * (ionoutc.alpha2 + phi_m * ionoutc.alpha3))
         if AMP < 0.0 { AMP = 0.0 }
         
-        var PER = ionoutc.beta0 + ionoutc.beta1 * phi_m + ionoutc.beta2 * phi_m2 + ionoutc.beta3 * phi_m3
+        // Horner's method for polynomial evaluation
+        var PER = ionoutc.beta0 + phi_m * (ionoutc.beta1 + phi_m * (ionoutc.beta2 + phi_m * ionoutc.beta3))
         if PER < 72000.0 { PER = 72000.0 }
         
         var t = Constants.SECONDS_IN_DAY / 2.0 * lam_i + g.sec
@@ -88,8 +90,10 @@ struct Channel {
     ///   - satPos: Satellite ECEF position.
     ///   - satVel: Satellite ECEF velocity.
     ///   - clk: Satellite clock bias and drift.
+    ///   - llh: Precomputed receiver LLH position.
+    ///   - tmat: Precomputed receiver local tangent plane matrix.
     /// - Returns: A `Range` instance with estimated signal parameters.
-    static func estimateRange(ionoutc: IonUTC, g: GPSTime, xyz: Vector3, satPos: Vector3, satVel: Vector3, clk: (bias: Double, drift: Double)) -> Range {
+    static func estimateRange(ionoutc: IonUTC, g: GPSTime, xyz: Vector3, satPos: Vector3, satVel: Vector3, clk: (bias: Double, drift: Double), llh: Vector3, tmat: [[Double]]) -> Range {
         var rho = Range()
         var pos = satPos
         
@@ -110,8 +114,6 @@ struct Channel {
         rho.rate = dot(satVel, los) / range
         rho.g = g
         
-        let llh = MathUtils.xyz2llh(xyz)
-        let tmat = MathUtils.ltcmat(llh)
         let neu = MathUtils.ecef2neu(los, t: tmat)
         rho.azel = MathUtils.neu2azel(neu)
         
