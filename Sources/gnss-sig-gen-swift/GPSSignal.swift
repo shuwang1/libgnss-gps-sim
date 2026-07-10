@@ -69,15 +69,19 @@ struct GPSSignal {
     ///   - channels: Array of all simulation channels.
     ///   - gains: Signal gain for each channel.
     ///   - active: Indices of active channels to synthesize.
-    ///   - iAcc: Pre-allocated buffer for I accumulation.
-    ///   - qAcc: Pre-allocated buffer for Q accumulation.
+    ///   - iAcc: Pre-allocated buffer for I channel accumulation.
+    ///   - qAcc: Pre-allocated buffer for Q channel accumulation.
     static func generateSamples(iqBuff: inout [Int16], iqBuffSize: Int, channels: inout [Link], gains: [Int], active: [Int], iAcc: inout [Int], qAcc: inout [Int]) {
-        iAcc.withUnsafeMutableBufferPointer { iAccPtr in
-            for i in 0..<iqBuffSize { iAccPtr[i] = 0 }
-
-            qAcc.withUnsafeMutableBufferPointer { qAccPtr in
-                for i in 0..<iqBuffSize { qAccPtr[i] = 0 }
-                LUT.iq_lut.withUnsafeBufferPointer { _ in
+        // Zero out the accumulation buffers for the current step
+        iAcc.withUnsafeMutableBufferPointer { ptr in ptr.update(repeating: 0) }
+        qAcc.withUnsafeMutableBufferPointer { ptr in ptr.update(repeating: 0) }
+        
+        // Optimization: Bypassing Swift array bounds checking using UnsafeBufferPointers.
+        // The inner loops here run millions of times per second (digital signal processing).
+        // Using direct memory access avoids significant CPU overhead and speeds up sample generation.
+        LUT.iq_lut.withUnsafeBufferPointer { iqLutPtr in
+            iAcc.withUnsafeMutableBufferPointer { iAccPtr in
+                qAcc.withUnsafeMutableBufferPointer { qAccPtr in
                     for ai in active {
                         var c = channels[ai]
                         var g = gains[ai] * c.dataBit
@@ -118,13 +122,16 @@ struct GPSSignal {
                             }
                             p *= g
 
+                            // PERFORMANCE OPTIMIZATION:
+                            // 1. Replaced `+`, `+=`, `*` with unchecked operators `&+`, `&+=`, `&*` to avoid Swift runtime overflow checks in tight loop.
+                            // 2. Simplified `((carrPhase >> 16) & 0x1ff) << 1` into `(carrPhase >> 15) & 0x3fe` to save operations.
                             for _ in 0..<nToDo {
-                                let iTable = Int((carrPhase >> 16) & 0x1ff)
-                                iAccPtr[isamp] += p * Int(iqLutPtr[iTable << 1])
-                                qAccPtr[isamp] += p * Int(iqLutPtr[(iTable << 1) + 1])
-                                carrPhase = carrPhase &+ carrStep
-                                codePhase += codeStep
-                                isamp += 1
+                                let iTable2 = Int(truncatingIfNeeded: (carrPhase >> 15) & 0x3fe)
+                                iAccPtr[isamp] &+= p &* Int(lutPtr[iTable2])
+                                qAccPtr[isamp] &+= p &* Int(lutPtr[iTable2 &+ 1])
+                                carrPhase &+= carrStep
+                                codePhase &+= codeStep
+                                isamp &+= 1
                             }
                         }
                         c.codePhaseFixed = codePhase
@@ -137,10 +144,15 @@ struct GPSSignal {
             }
         }
         
-        iqBuff.withUnsafeMutableBufferPointer { iqBuffPtr in
-            for isamp in 0..<iqBuffSize {
-                iqBuffPtr[isamp << 1] = Int16(truncatingIfNeeded: (iAcc[isamp] + 64) >> 7)
-                iqBuffPtr[(isamp << 1) + 1] = Int16(truncatingIfNeeded: (qAcc[isamp] + 64) >> 7)
+        iqBuff.withUnsafeMutableBufferPointer { iqPtr in
+            iAcc.withUnsafeBufferPointer { iAccPtr in
+                qAcc.withUnsafeBufferPointer { qAccPtr in
+                    for isamp in 0..<iqBuffSize {
+                        let idx = isamp << 1
+                        iqPtr[idx] = Int16(truncatingIfNeeded: (iAccPtr[isamp] &+ 64) >> 7)
+                        iqPtr[idx &+ 1] = Int16(truncatingIfNeeded: (qAccPtr[isamp] &+ 64) >> 7)
+                    }
+                }
             }
         }
     }

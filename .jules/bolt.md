@@ -19,3 +19,9 @@
 ## 2026-07-08 - Pre-allocate buffers in hot loops
 **Learning:** Re-allocating large arrays like `iqBuff`, `iAcc`, and `qAcc` inside the `step()` loop of `Simulator.swift` (which executes 10 times a second for simulation time) adds unnecessary overhead.
 **Action:** Pre-allocate these arrays in the `Simulator` initializer as properties and pass them using `inout` to `GPSSignal.generateSamples`. Ensure that accumulation buffers (`iAcc`, `qAcc`) are zeroed out at the start of each step using fast loops within `withUnsafeMutableBufferPointer` blocks.
+## 2026-06-20 - Swift wrapping arithmetic operators for DSP
+**Learning:** Replaced standard arithmetic operators (`+`, `*`, `+=`) with their unchecked, wrapping equivalents (`&+`, `&*`, `&+=`) inside the tight I/Q sample generation loop in `GPSSignal.swift`. This instructs the Swift compiler to skip runtime overflow bounds checking, unlocking a massive performance boost for DSP phases/accumulators that either naturally wrap or are guaranteed not to overflow.
+**Action:** When working in Swift on extremely tight loops representing bit manipulation or phase tracking, always use unchecked arithmetic operators (`&+`, `&-`, `&*`) where overflow is impossible or intended wrapping is mathematically correct.
+## 2026-06-27 - Remove hot-loop allocations and avoid cast overheads
+**Learning:** Re-allocating arrays (like `iAcc` and `qAcc`) on every high-frequency simulation step (0.1s ticks) causes massive garbage collection/refcounting pressure. Additionally, using small integer types (like `Int16`) for arrays forces hot loops to constantly cast elements to `Int` for math, wasting CPU cycles.
+**Action:** When working in tight simulation/DSP loops, hoist array allocations into object initialization and pass them as `inout` buffers to be zeroed out (`update(repeating: 0)`) and reused. Always use native `Int` for lookup tables unless memory constrained, to avoid casting overheads during math operations.
