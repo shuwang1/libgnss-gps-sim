@@ -79,7 +79,7 @@ struct GPSSignal {
         // Optimization: Bypassing Swift array bounds checking using UnsafeBufferPointers.
         // The inner loops here run millions of times per second (digital signal processing).
         // Using direct memory access avoids significant CPU overhead and speeds up sample generation.
-        LUT.iq_lut.withUnsafeBufferPointer { iqLutPtr in
+        LUT.iq_lut.withUnsafeBufferPointer { lutPtr in
             iAcc.withUnsafeMutableBufferPointer { iAccPtr in
                 qAcc.withUnsafeMutableBufferPointer { qAccPtr in
                     for ai in active {
