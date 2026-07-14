@@ -1,4 +1,4 @@
-# gps-sig-gen-swift: Modular GNSS Signal Generator
+# libgnss-sim-l1ca-swift: Modular GPS L1/CA Signal Generator
 
 [![CI](https://github.com/shuwang1/gps-signal-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/shuwang1/gps-signal-generator/actions/workflows/ci.yml)[![codecov](https://codecov.io/github/shuwang1/libgnss-sim-gps/graph/badge.svg?token=KWS4NXYUT6)](https://codecov.io/github/shuwang1/libgnss-sim-gps)[![CodeFactor](https://www.codefactor.io/repository/github/shuwang1/libgnss-sim-gps/badge)](https://www.codefactor.io/repository/github/shuwang1/libgnss-sim-gps)[![Codacy Badge](https://app.codacy.com/project/badge/Grade/2db8d4885c84409ea4d3bbbaa54a753e)](https://app.codacy.com/gh/shuwang1/libgnss-gps-sim/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)[![Doc Pages-build-deployment](https://github.com/shuwang1/gps-signal-generator/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/shuwang1/gps-signal-generator/actions/workflows/pages/pages-build-deployment)
 
